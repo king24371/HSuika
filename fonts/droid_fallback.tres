@@ -1,0 +1,7 @@
+[gd_resource type="FontFile" load_steps=2 format=3]
+
+[ext_resource type="FontFile" path="res://fonts/DroidSansFallbackFull.ttf" id="1_droid"]
+
+[resource]
+resource_name = "Droid Sans Fallback Full"
+font_data = ExtResource("1_droid")

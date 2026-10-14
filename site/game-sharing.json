@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 2,
+  "publicationOrigin": "https://suikaball-nlyhkjka.manus.game",
+  "title": "彩球果實物理場",
+  "description": "A portrait six-tier elastic merge game drawn entirely with procedural shapes.",
+  "defaultCaptions": {},
+  "assets": {
+    "favicon": {
+      "digest": "sha256:ad3c35ad0facf487c618204bd98db543034fc95224eadc7f08c7a9ff38d5b3b5",
+      "path": "share/ad3c35ad0facf487c618204bd98db543034fc95224eadc7f08c7a9ff38d5b3b5.png",
+      "mime": "image/png",
+      "width": 128,
+      "height": 128,
+      "sizeBytes": 5700
+    }
+  }
+}

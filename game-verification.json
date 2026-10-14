@@ -4,13 +4,13 @@
     {
       "kind": "scene",
       "path": "res://test/test_suite.tscn",
-      "expect": "[game-generic-tests] PASS:",
+      "expect": "[suika-tests] PASS:",
       "profile": "source"
     },
     {
       "kind": "script",
       "path": "res://tools/verify_exported_pack.gd",
-      "expect": "[exported-pack] PASS:",
+      "expect": "[suika-pack] PASS:",
       "profile": "pack"
     }
   ]

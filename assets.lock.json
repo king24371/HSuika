@@ -30,7 +30,7 @@
       "size": 971282,
       "assetType": "image",
       "groupId": "template",
-      "used": true
+      "used": false
     },
     "assets/template/environment/foreground.png": {
       "path": "https://d1oupeiobkpcny.cloudfront.net/assets/dashboard/materials/2026/09/06/game-template/game-generic/2026.09.07-minimalist-v1/4b6916024c69961fbfa7cdc929c68f547fea4561e61ebdb3405b3aba0efbd94d/assets/environment/foreground.png",
@@ -38,7 +38,7 @@
       "size": 58603,
       "assetType": "image",
       "groupId": "template",
-      "used": true
+      "used": false
     },
     "assets/template/fonts/Figtree-VF.subset.woff2": {
       "path": "https://d1oupeiobkpcny.cloudfront.net/assets/dashboard/materials/2026/09/25/game-template/game-generic/2026.09.25-typography-v1/b3976c5969c8b1afd81dc3e314b61d8ffe3f3f58cf40906443105d330e6e0bdf/assets/template/fonts/Figtree-VF.subset.woff2",
@@ -110,7 +110,7 @@
       "size": 473356,
       "assetType": "image",
       "groupId": "template",
-      "used": true
+      "used": false
     },
     "assets/template/ui/pause_glass.png": {
       "path": "https://d1oupeiobkpcny.cloudfront.net/assets/dashboard/materials/2026/09/06/game-template/game-generic/2026.09.07-minimalist-v1/c88a4725838df85e72c7270865848f275b62c525c5679a2a8b7ecefb1af82d4b/assets/ui/pause_glass.png",
@@ -118,7 +118,7 @@
       "size": 115691,
       "assetType": "image",
       "groupId": "template",
-      "used": true
+      "used": false
     },
     "assets/template/ui/title_glass.png": {
       "path": "https://d1oupeiobkpcny.cloudfront.net/assets/dashboard/materials/2026/09/06/game-template/game-generic/2026.09.07-minimalist-v1/8860db07768f093d4effea10b51431f76a1552d4bc7fd4e57757f189c51f0429/assets/ui/title_glass.png",
@@ -126,7 +126,7 @@
       "size": 155592,
       "assetType": "image",
       "groupId": "template",
-      "used": true
+      "used": false
     }
   }
 }
