@@ -13,6 +13,7 @@ const UI_FONT_MEDIUM: Font = preload("res://assets/template/fonts/ui_medium.tres
 
 const TIER_RADIUS_VALUES := [18.0, 25.0, 34.0, 45.0, 58.0, 73.0]
 const TIER_NAMES: Array[String] = ["莓果", "蜜橘", "青檸", "薄荷", "藍莓", "葡萄"]
+const TIER_TEXTURE_DIR := "res://assets/balls/"
 
 var _state := "title"
 var _paused := false
@@ -37,12 +38,15 @@ var _tier_colors: Array[Color] = [
 	Color("#ff6b6b"), Color("#ffbd59"), Color("#b8e05f"),
 	Color("#56d6d2"), Color("#6d9bff"), Color("#b784f3"),
 ]
+var _tier_texture_paths: Array[String] = []
+var _tier_textures: Array = []
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_rng.seed = 20261015
 	_best_score = int(ProjectSettings.get_setting("application/config/version", "0"))
+	_load_tier_textures()
 	_reset_run()
 	queue_redraw()
 
@@ -138,6 +142,18 @@ func _random_tier() -> int:
 	return 3
 
 
+func _load_tier_textures() -> void:
+	_tier_texture_paths.clear()
+	_tier_textures.clear()
+	for tier in range(6):
+		var path := TIER_TEXTURE_DIR + str(tier + 1) + ".png"
+		_tier_texture_paths.append(path)
+		if ResourceLoader.exists(path):
+			_tier_textures.append(load(path) as Texture2D)
+		else:
+			_tier_textures.append(null)
+
+
 func _make_ball(tier: int, position: Vector2) -> Dictionary:
 	return {
 		"tier": clampi(tier, 0, _tier_radii.size() - 1),
@@ -167,14 +183,23 @@ func _drop_ball() -> void:
 func _simulate_step(delta: float) -> void:
 	for ball in balls:
 		var velocity: Vector2 = ball["vel"]
+		var tier: int = int(ball["tier"])
+		var radius: float = float(_tier_radii[tier])
 		velocity.y += 1180.0 * delta
-		velocity *= Vector2(0.999, 0.9998)
+		velocity *= Vector2(0.994, 0.996)
 		ball["vel"] = velocity
 		ball["pos"] = (ball["pos"] as Vector2) + velocity * delta
 		ball["lock"] = maxf(0.0, float(ball["lock"]) - delta)
 		ball["squash"] = (ball["squash"] as Vector2).lerp(Vector2.ONE, minf(1.0, delta * 10.5))
 		ball["impact"] = maxf(0.0, float(ball["impact"]) - delta * 4.2)
-		ball["rotation"] = lerp_angle(float(ball["rotation"]), 0.0, minf(1.0, delta * 5.0))
+		ball["rotation"] = lerp_angle(float(ball["rotation"]), 0.0, minf(1.0, delta * 7.0))
+		if velocity.length() < 24.0 and float(ball["impact"]) < 0.08:
+			ball["rest"] = float(ball["rest"]) + delta
+		else:
+			ball["rest"] = 0.0
+		if float(ball["rest"]) > 0.16 and (ball["pos"] as Vector2).y + radius >= FLOOR_Y - 1.5:
+			velocity = Vector2.ZERO
+			ball["vel"] = velocity
 		_resolve_world_bounds(ball)
 
 	# 每個物理小步最多完成一次合成，避免同一幀連鎖造成穿透。
@@ -206,20 +231,22 @@ func _resolve_world_bounds(ball: Dictionary) -> void:
 		position.x = LEFT_WALL + radius
 		if velocity.x < 0.0:
 			_set_impact(ball, absf(velocity.x) * 0.7, Vector2.LEFT)
-			velocity.x = -velocity.x * 0.76
+			velocity.x = -velocity.x * 0.42
 	elif position.x + radius > RIGHT_WALL:
 		position.x = RIGHT_WALL - radius
 		if velocity.x > 0.0:
 			_set_impact(ball, absf(velocity.x) * 0.7, Vector2.RIGHT)
-			velocity.x = -velocity.x * 0.76
+			velocity.x = -velocity.x * 0.42
 	if position.y + radius > FLOOR_Y:
 		position.y = FLOOR_Y - radius
 		if velocity.y > 40.0:
 			_set_impact(ball, absf(velocity.y), Vector2.UP)
-			velocity.y = -velocity.y * 0.70
+			velocity.y = -velocity.y * 0.32
 		else:
 			velocity.y = 0.0
-			velocity.x *= 0.985
+			if absf(velocity.x) < 8.0:
+				velocity.x = 0.0
+			velocity.x *= 0.86
 	ball["pos"] = position
 	ball["vel"] = velocity
 
@@ -227,22 +254,24 @@ func _resolve_world_bounds(ball: Dictionary) -> void:
 func _resolve_ball_collision(a: Dictionary, b: Dictionary, delta_pos: Vector2, distance: float, minimum: float) -> void:
 	var normal := delta_pos / distance
 	var overlap := minimum - distance
+	if overlap < 0.45:
+		return
 	var a_radius: float = float(_tier_radii[int(a["tier"])])
 	var b_radius: float = float(_tier_radii[int(b["tier"])])
 	var total: float = a_radius + b_radius
-	a["pos"] = (a["pos"] as Vector2) - normal * overlap * (b_radius / total)
-	b["pos"] = (b["pos"] as Vector2) + normal * overlap * (a_radius / total)
+	a["pos"] = (a["pos"] as Vector2) - normal * overlap * 0.72 * (b_radius / total)
+	b["pos"] = (b["pos"] as Vector2) + normal * overlap * 0.72 * (a_radius / total)
 	var relative: Vector2 = (b["vel"] as Vector2) - (a["vel"] as Vector2)
 	var velocity_along := relative.dot(normal)
 	if velocity_along < 0.0:
 		var mass_a := maxf(1.0, a_radius * a_radius)
 		var mass_b := maxf(1.0, b_radius * b_radius)
-		var impulse := -(1.0 + 0.82) * velocity_along / (1.0 / mass_a + 1.0 / mass_b)
+		var impulse := -(1.0 + 0.30) * velocity_along / (1.0 / mass_a + 1.0 / mass_b)
 		a["vel"] = (a["vel"] as Vector2) - normal * impulse / mass_a
 		b["vel"] = (b["vel"] as Vector2) + normal * impulse / mass_b
 		var tangent := Vector2(-normal.y, normal.x)
 		var tangent_speed := relative.dot(tangent)
-		var friction := clampf(-tangent_speed * 0.055, -impulse * 0.12, impulse * 0.12)
+		var friction := clampf(-tangent_speed * 0.11, -impulse * 0.22, impulse * 0.22)
 		a["vel"] = (a["vel"] as Vector2) - tangent * friction / mass_a
 		b["vel"] = (b["vel"] as Vector2) + tangent * friction / mass_b
 		if absf(velocity_along) > 32.0:
@@ -274,10 +303,10 @@ func _merge_balls(index_a: int, index_b: int) -> void:
 	balls.remove_at(high_index)
 	balls.remove_at(low_index)
 	var merged := _make_ball(next_tier, position)
-	merged["vel"] = velocity + Vector2(0.0, -95.0)
+	merged["vel"] = velocity + Vector2(0.0, -42.0)
 	merged["squash"] = Vector2(1.30, 0.72)
 	merged["impact"] = 0.95
-	merged["lock"] = 0.34
+	merged["lock"] = 0.26
 	balls.append(merged)
 	_score += (tier + 1) * 12
 	_spawn_burst(position, burst_color, 16)
@@ -443,6 +472,7 @@ func _draw_ball_visual(ball: Dictionary, alpha: float = 1.0, preview: bool = fal
 	var squash: Vector2 = ball["squash"]
 	var rotation := float(ball["rotation"])
 	var base := _tier_colors[tier]
+	var texture: Texture2D = _tier_textures[tier] if tier < _tier_textures.size() else null
 	var shadow := Color(0.0, 0.0, 0.0, 0.30 * alpha)
 	if preview:
 		shadow.a = 0.0
@@ -455,14 +485,19 @@ func _draw_ball_visual(ball: Dictionary, alpha: float = 1.0, preview: bool = fal
 	body.a = alpha
 	draw_set_transform(position, rotation, Vector2(radius * squash.x, radius * squash.y))
 	draw_circle(Vector2.ZERO, 1.04, Color(0.02, 0.06, 0.11, 0.75 * alpha))
-	draw_circle(Vector2.ZERO, 0.96, body)
+	if texture != null:
+		draw_texture_rect(texture, Rect2(-0.96, -0.96, 1.92, 1.92), false, Color(1.0, 1.0, 1.0, alpha))
+	else:
+		draw_circle(Vector2.ZERO, 0.96, body)
 	var light := base.lightened(0.24)
 	light.a = alpha * 0.92
-	draw_circle(Vector2(-0.24, -0.27), 0.65, light)
+	if texture == null:
+		draw_circle(Vector2(-0.24, -0.27), 0.65, light)
 	var shade := base.darkened(0.24)
 	shade.a = alpha * 0.55
-	draw_arc(Vector2(0.05, 0.10), 0.76, 0.20, 2.65, 18, shade, 0.08)
-	if tier >= 3:
+	if texture == null:
+		draw_arc(Vector2(0.05, 0.10), 0.76, 0.20, 2.65, 18, shade, 0.08)
+	if texture == null and tier >= 3:
 		var ring := base.lightened(0.40)
 		ring.a = alpha * 0.50
 		draw_arc(Vector2.ZERO, 0.78, -2.55, -0.35, 16, ring, 0.06)

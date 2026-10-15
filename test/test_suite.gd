@@ -18,8 +18,12 @@ func _run() -> void:
 	add_child(game)
 	await get_tree().process_frame
 	var radii: Array = game.get("_tier_radii")
+	var texture_paths: Array = game.get("_tier_texture_paths")
 	var colors: Array = game.get("_tier_colors")
 	_check(radii.size() == 6, "game must define exactly six ball tiers")
+	_check(texture_paths.size() == 6, "game must expose six texture slots")
+	_check(str(texture_paths[0]).ends_with("assets/balls/1.png"), "texture slot one must map to 1.png")
+	_check(str(texture_paths[5]).ends_with("assets/balls/6.png"), "texture slot six must map to 6.png")
 	_check(colors.size() == 6, "game must define six tier colors")
 	for index in range(1, radii.size()):
 		_check(radii[index] > radii[index - 1], "ball radii must increase by tier")

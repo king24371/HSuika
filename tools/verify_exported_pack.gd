@@ -18,6 +18,8 @@ func _verify() -> void:
 		_check(str(main.get("_state")) == "title", "pack boots to title")
 		var radii: Array = main.get("_tier_radii")
 		_check(radii.size() == 6, "pack keeps six ball tiers")
+		var texture_paths: Array = main.get("_tier_texture_paths")
+		_check(texture_paths.size() == 6, "pack exposes six texture slots")
 		main.call("_start_game")
 		await process_frame
 		_check(str(main.get("_state")) == "game", "pack starts gameplay")
