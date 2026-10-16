@@ -25,3 +25,5 @@ node_modules/
 !site/**
 
 # Template fonts (subset WOFF2) restore from assets.lock.json like other media.
+
+.manus-artifacts.json
